@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Navbar @change-view="currentView = $event" />
+    <Navbar @change-view="changeView" />
     <component :is="currentView"></component>
   </div>
 </template>
@@ -14,13 +14,18 @@ export default {
   name: 'App',
   components: {
     Navbar,
-    todos: Todos,
-    post: Post,
+    Todos,
+    Post,
   },
   data() {
     return {
-      currentView: 'todos',
+      currentView: 'Todos',
     };
+  },
+  methods: {
+    changeView(view) {
+      this.currentView = view;
+    },
   },
 };
 </script>

@@ -4,8 +4,8 @@
       <h1>Taufik Mahaldi</h1>
     </div>
     <div class="links">
-      <router-link @click="$emit('change-view', 'todos')" class="link">Todo List</router-link>
-      <router-link @click="$emit('change-view', 'post')" class="link">Posts</router-link>
+      <div @click="$emit('change-view', 'todos')" class="link">Todo List</div>
+      <div @click="$emit('change-view', 'post')" class="link">Posts</div>
     </div>
   </nav>
 </template>

@@ -1,31 +1,32 @@
 <template>
-    <ul>
-      <TodoItem v-for="(todo, index) in todos" :key="index" :todo="todo" @remove="removeTodo(index)" />
-    </ul>
+  <ul>
+    <slot name="todo-item" v-for="(todo, index) in todos" :key="index" :todo="todo" :index="index">
+      <TodoItem :todo="todo" :index="index" @remove="removeTodo(index)" />
+    </slot>
+  </ul>
 </template>
-  
+
 <script>
-  import TodoItem from './TodoItem.vue';
-  
-  export default {
-    props: {
-      todos: Array,
+import TodoItem from './TodoItem.vue';
+
+export default {
+  props: {
+    todos: Array,
+  },
+  components: {
+    TodoItem,
+  },
+  methods: {
+    removeTodo(index) {
+      this.$emit('remove-todo', index);
     },
-    components: {
-      TodoItem,
-    },
-    methods: {
-      removeTodo(index) {
-        this.$emit('remove-todo', index); // Emit event dengan nama berbeda
-      },
-    },
-  };
+  },
+};
 </script>
-  
+
 <style scoped>
-    ul {
-      list-style-type: none;
-      padding: 0;
-  }
+  ul {
+    list-style-type: none;
+    padding: 0;
+}
 </style>
-  

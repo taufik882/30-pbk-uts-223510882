@@ -1,28 +1,24 @@
 <template>
- <div class="lis-activity">
-    <li :class="{ done: todo.done }">
+  <li :class="{ done: todo.done }">
+    <slot name="todo-content" :todo="todo" :index="index">
       <input type="checkbox" v-model="todo.done" />
       <span>{{ todo.text }}</span>
       <button @click="$emit('remove', index)">Cancel</button>
-    </li>
-  </div>
+    </slot>
+  </li>
 </template>
-  
+
 <script>
-  export default {
-    props: {
-      todo: Object,
-      index: Number,
-    },
-    emits: ['remove'],
-  };
+export default {
+  props: {
+    todo: Object,
+    index: Number,
+  },
+  emits: ['remove'],
+};
 </script>
-  
+
 <style scoped>
-  .lis-activity {
-    margin-top: 20px;
-  }
-  
   li {
     display: flex;
     justify-content: space-between;
@@ -35,13 +31,13 @@
   }
 
   li.done span {
-  text-decoration: line-through;
-}
-  
+    text-decoration: line-through;
+  }
+
   li input[type="checkbox"] {
     margin-right: 10px;
   }
-  
+
   li button {
     background-color: #e74c3c;
     color: #fff;
@@ -51,9 +47,8 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
-  
+
   li button:hover {
     background-color: #c0392b;
   }
 </style>
-  
