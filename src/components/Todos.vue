@@ -1,197 +1,159 @@
 <template>
-  <div class="kontener">
-    <div class="bodi">
-      <h1>Buat Daftar Kegiatan Anda</h1>
-      <p>by Taufik Mahaldi</p>
-      <div class="menu">
-        <input type="text" v-model="newTodo" placeholder="Masukkan item to-do baru" />
-        <button @click="addTodo">Tambah</button>
-        <div class="dropdown">
-          <button class="dropbtn">Filter</button>
-          <div class="drop-konten">
-            <div class="filter-buttons">
-              <button @click="filter = 'all'">Semua</button>
-              <button @click="filter = 'done'">Selesai</button>
-              <button @click="filter = 'pending'">Belum Selesai</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <hr>
-    </div>
+  <q-page class="todos-container q-pa-md">
+    <q-card flat bordered class="q-pa-md card-container">
+      <q-card-section class="q-gutter-md">
+        <div class="post-title">Daftar Todo List Anda</div>
+        <q-input v-model="newTodo" placeholder="Tambah item baru di sini..." outlined />
+        <q-btn @click="handleAddTodo" label="Tambah" class="q-mt-md custom-btn" />
+        <q-btn-dropdown label="Filter" class="q-mt-md custom-btn">
+          <q-list>
+            <q-item clickable @click="setFilter('all')">
+              <q-item-section>Semua</q-item-section>
+            </q-item>
+            <q-item clickable @click="setFilter('done')">
+              <q-item-section>Selesai</q-item-section>
+            </q-item>
+            <q-item clickable @click="setFilter('pending')">
+              <q-item-section>Belum Selesai</q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+      </q-card-section>
+    </q-card>
+    <q-separator spaced class="q-my-md" />
     <TodoList :todos="filteredTodos" @remove-todo="removeTodo" />
-  </div>
+  </q-page>
 </template>
 
 <script>
+import { ref, computed } from 'vue';
+import { useTodoStore } from '../store/store';
 import TodoList from './TodoList.vue';
 
 export default {
-components: {
-  TodoList,
-},
-data() {
-  return {
-    newTodo: '',
-    todos: [],
-    filter: 'all',
-  };
-},
-computed: {
-  filteredTodos() {
-    if (this.filter === 'all') {
-      return this.todos;
-    } else if (this.filter === 'done') {
-      return this.todos.filter(todo => todo.done);
-    } else if (this.filter === 'pending') {
-      return this.todos.filter(todo => !todo.done);
-    }
+  components: {
+    TodoList,
   },
-},
-methods: {
-  addTodo() {
-    if (this.newTodo.trim()) {
-      this.todos.push({
-        text: this.newTodo,
-        done: false,
-      });
-      this.newTodo = '';
-    }
+  setup() {
+    const store = useTodoStore();
+    const newTodo = ref('');
+
+    const handleAddTodo = () => {
+      if (newTodo.value.trim()) {
+        store.addTodo(newTodo.value);
+        newTodo.value = '';
+        animateAction('added');
+      }
+    };
+
+    const setFilter = (filter) => {
+      store.setFilter(filter);
+    };
+
+    const animateAction = (action) => {
+      const notification = document.createElement('div');
+      notification.className = `notification ${action}`;
+      notification.textContent = `Item ${action}`;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 2000);
+    };
+
+    const filteredTodos = computed(() => store.filteredTodos);
+
+    return {
+      newTodo,
+      filteredTodos,
+      handleAddTodo,
+      setFilter,
+      removeTodo: store.removeTodo,
+    };
   },
-  removeTodo(index) {
-    this.todos.splice(index, 1);
-  },
-},
 };
 </script>
 
 <style scoped>
-.kontener {
-background: #f5f5f5;
-max-width: 50rem;
-margin: 3.75rem auto;
-height: auto;
-padding: 1.25rem;
-border-radius: 16px;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.todos-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-.bodi {
-flex-wrap: wrap;
+.post-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #4B0082; 
 }
 
-.bodi h1, .bodi p {
-text-align: center;
+.card-container {
+  background: #F8F8FF; 
+  color: #4B0082; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
-.menu {
-display: flex;
-align-items: center;
-justify-content: center;
-padding: 20px;
+.q-input {
+  border-color: #6A0DAD; 
+  border-radius: 8px;
 }
 
-.menu input[type="text"],
-.menu button,
-.menu .dropdown {
-padding: 12px;
-margin-right: 12px;
-cursor: pointer;
+.custom-btn {
+  background-color: #6A0DAD; 
+  color: white;
+  border-radius: 8px;
 }
 
-.menu input[type="text"] {
-width: 60%;
-border: 2px solid #ddd;
-border-radius: 40px;
+.custom-btn:hover {
+  background-color: #551A8B; 
 }
 
-.menu button {
-background-color: #3498db;
-color: white;
-border: none;
-outline: none;
-border-radius: 40px;
-box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+.q-btn-dropdown {
+  background-color: #6A0DAD; 
+  color: white;
+  border-radius: 8px;
 }
 
-.menu button:hover {
-background-color: #2980b9;
+.q-btn-dropdown:hover {
+  background-color: #551A8B; 
 }
 
-.dropdown {
-position: relative;
-display: inline-block;
+.q-separator {
+  border-color: #6A0DAD; 
 }
 
-.dropdown .dropbtn {
-background-color: #3498db;
-color: white;
-padding: 12px;
-font-size: 1rem;
-border: none;
-border-radius: 40px;
-cursor: pointer;
+/* Animations */
+.notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #6A0DAD; 
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 1000;
+  animation: fadeInOut 2s;
 }
 
-.dropdown .dropbtn:hover {
-background-color: #2980b9;
+.notification.removed {
+  background: #EA4335; 
 }
 
-.dropdown .drop-konten {
-display: none;
-position: absolute;
-background-color: #fff;
-min-width: 160px;
-box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-z-index: 1;
-border-radius: 8px;
-overflow: hidden;
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
-.dropdown:hover .drop-konten {
-display: block;
-}
+@media (max-width: 600px) {
+  .todos-container {
+    padding: 10px;
+  }
 
-.filter-buttons {
-display: flex;
-flex-direction: column;
-}
-
-.filter-buttons button {
-background: none;
-border: none;
-padding: 12px;
-text-align: left;
-color: #333;
-width: 100%;
-cursor: pointer;
-transition: background-color 0.3s ease;
-}
-
-.filter-buttons button:hover {
-background-color: #f1f1f1;
-}
-
-@media only screen and (max-width: 768px) {
-.menu input[type="text"] {
-  width: 50%;
-}
-}
-
-@media only screen and (max-width: 480px) {
-.menu {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.menu input[type="text"] {
-  width: 100%;
-  margin-bottom: 12px;
-}
-
-.menu .dropdown {
-  margin-left: 0;
-  margin-top: 12px;
-}
+  .card-container {
+    padding: 10px;
+  }
 }
 </style>

@@ -1,141 +1,204 @@
 <template>
-  <div class="post-container">
-    <h2 class="post-title">Postingan</h2>
-    <div class="post-controls">
-      <select v-model="selectedUser" @change="fetchPosts" class="post-select">
-        <option value="" disabled selected>Pilih Nama Pengguna</option>
-        <option v-for="user in users" :value="user.id" :key="user.id">{{ user.name }}</option>
-      </select>
-    </div>
-    <hr>
-    <p v-if="loading" class="loading">Loading...</p>
-    <PostList v-if="posts.length && !loading" :posts="posts">
-      <template #post-item="{ post }">
-        <div class="custom-post-item">
-          <h3>{{ post.title }}</h3>
-          <p>{{ post.body }}</p>
-        </div>
-      </template>
-    </PostList>
-    <p v-else-if="!loading" class="no-posts">Tidak ada postingan.</p>
-  </div>
+  <q-page class="post-container">
+    <q-card class="post-card">
+      <q-card-section>
+        <div class="post-title">Postingan</div>
+      </q-card-section>
+
+      <q-card-section>
+        <q-form class="post-form">
+          <q-select
+            v-model="selectedUser"
+            :options="userOptions"
+            option-label="label"
+            option-value="value"
+            emit-value
+            map-options
+            label="Pilih Nama Pengguna"
+            filled
+            class="post-select"
+            placeholder="Pilih pengguna untuk melihat postingan"
+          />
+          <q-btn
+            label="Cari"
+            @click="fetchPosts"
+            :disable="!selectedUser"
+            class="post-button"
+            icon="search"
+          />
+        </q-form>
+      </q-card-section>
+
+      <q-separator inset />
+
+      <q-card-section>
+        <q-spinner v-if="loading" color="primary" class="loading-spinner" />
+        <PostList v-if="posts.length && !loading" :posts="posts">
+          <template #post-item="{ post }">
+            <q-card class="custom-post-item" flat bordered>
+              <q-card-section>
+                <div class="text-h6">{{ post.title }}</div>
+                <div>{{ post.body }}</div>
+              </q-card-section>
+            </q-card>
+          </template>
+        </PostList>
+        <q-card-section v-else-if="!loading" class="no-posts">Tidak ada postingan.</q-card-section>
+      </q-card-section>
+    </q-card>
+  </q-page>
 </template>
 
 <script>
+import { ref, onMounted, computed } from 'vue';
+import { useQuasar } from 'quasar';
 import PostList from './PostList.vue';
 
 export default {
   components: {
     PostList,
   },
-  data() {
-    return {
-      selectedUser: null,
-      users: [],
-      posts: [],
-      loading: false,
-    };
-  },
-  methods: {
-    async fetchPosts() {
-      if (!this.selectedUser) return;
-      this.loading = true;
+  setup() {
+    const $q = useQuasar();
+    const selectedUser = ref(null);
+    const users = ref([]);
+    const posts = ref([]);
+    const loading = ref(false);
+
+    const fetchPosts = async () => {
+      if (!selectedUser.value) return;
+      loading.value = true;
       try {
-        const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${this.selectedUser}`);
-        this.posts = await response.json();
+        const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${selectedUser.value}`);
+        posts.value = await response.json();
       } catch (error) {
-        console.error('Error fetching posts:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Error fetching posts: ' + error.message,
+        });
       } finally {
-        this.loading = false;
+        loading.value = false;
       }
-    },
-    async fetchUsers() {
-      this.loading = true;
+    };
+
+    const fetchUsers = async () => {
+      loading.value = true;
       try {
         const response = await fetch('https://jsonplaceholder.typicode.com/users');
-        this.users = await response.json();
+        users.value = await response.json();
       } catch (error) {
-        console.error('Error fetching users:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Error fetching users: ' + error.message,
+        });
       } finally {
-        this.loading = false;
+        loading.value = false;
       }
-    },
-  },
-  mounted() {
-    this.fetchUsers();
+    };
+
+    onMounted(fetchUsers);
+
+    const userOptions = computed(() => users.value.map(user => ({ label: user.name, value: user.id })));
+
+    return {
+      selectedUser,
+      users,
+      posts,
+      loading,
+      fetchPosts,
+      userOptions,
+    };
   },
 };
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
 .post-container {
   max-width: 800px;
   margin: 20px auto;
-  padding: 20px;
-  background: #ffffff;
+  font-family: 'Roboto', sans-serif;
+}
+
+.post-card {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
 }
 
 .post-title {
   font-size: 2rem;
-  color: #333;
+  font-weight: 700;
   text-align: center;
   margin-bottom: 20px;
+  color: #333;
 }
 
-.post-controls {
+.post-form {
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .post-select {
-  padding: 12px;
-  margin: 4px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  background: #f9f9f9;
+  flex-grow: 1;
+  margin: 10px;
 }
 
-.loading {
-  text-align: center;
-  color: #999;
+.post-button {
+  flex-shrink: 0;
+  margin: 10px;
+  background-color: #6A0DAD; 
+  color: white;
+  border-radius: 8px;
+}
+
+.post-button:hover {
+  background-color: #551A8B; 
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
 }
 
 .no-posts {
   text-align: center;
   color: #999;
+  font-size: 1rem;
 }
 
-@media (max-width: 768px) {
+.custom-post-item {
+  margin-bottom: 20px;
+  border-radius: 8px;
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.custom-post-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+@media (max-width: 600px) {
   .post-container {
-    padding: 15px;
+    margin: 10px;
+  }
+
+  .post-card {
+    padding: 10px;
   }
 
   .post-title {
     font-size: 1.5rem;
   }
 
-  .post-controls {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .post-select {
+  .post-select,
+  .post-button {
     width: 100%;
-    margin: 8px 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .post-title {
-    font-size: 1.25rem;
-  }
-
-  .post-select {
-    font-size: 0.9rem;
+    margin: 5px 0;
   }
 }
 </style>
