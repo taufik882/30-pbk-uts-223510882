@@ -5,7 +5,7 @@
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
         <q-toolbar-title class="title-container">
           <q-avatar>
-            <img src="/src/assets/logo1.jpeg">
+            <img src="./assets/logo1.jpeg">
           </q-avatar>
           <div class="brand-title">Taufik Mahaldi</div>
         </q-toolbar-title>
